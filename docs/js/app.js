@@ -38,10 +38,10 @@ function init() {
 
     loader.load("./model/rocketX.json", function(geo, mat){ // モデルを読み込む
         mat = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png"),side:THREE.DoubleSide});
-        //mat = new THREE.MeshLambertMaterial();
+        //mat = new THREE.MeshNormalMaterial();
         mesh2 = new THREE.Mesh(geo, mat);                // メッシュ化
         mesh2.name = "rocket";                              // メッシュの名前（後でピッキングで使う）
-        mesh2.scale.set(0.3, 0.2, 0.3);                     // 初期サイズ（現物合わせ）
+        mesh2.scale.set(0.3, 0.3, 0.3);                     // 初期サイズ（現物合わせ）
         mesh2.position.set(-0.9, 0, 0.5);                      // 初期位置（現物合わせ）
         scene.add(mesh2);
     });
