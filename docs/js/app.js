@@ -18,6 +18,23 @@ var line1 = [];
 var geometryLine2 = new THREE.Geometry();
 var line2 = [];
 
+var text1;
+var text2;
+
+function set_texture() {
+ 
+  canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 32;
+  textContext = canvas.getContext('2d');
+  textContext.font = "20px '‚l‚r ‚oƒSƒVƒbƒN'";
+ 
+  textContext.fillStyle = "rgb(200, 30, 100)";
+  textContext.fillText("‚Ô‚Í‚Í‚Í", 0, 20);
+  texture = new THREE.Texture(canvas);
+  return texture;
+}
+
 function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
@@ -37,7 +54,7 @@ function init() {
     scene.add(mesh1);
 
     loader.load("./model/rocketX.json", function(geo, mat){ // ƒ‚ƒfƒ‹‚ğ“Ç‚İ‚Ş
-        mat = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png"),side:THREE.DoubleSide});
+        mat = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png")});
         //mat = new THREE.MeshNormalMaterial();
         mesh2 = new THREE.Mesh(geo, mat);                // ƒƒbƒVƒ…‰»
         mesh2.name = "rocket";                              // ƒƒbƒVƒ…‚Ì–¼‘OiŒã‚ÅƒsƒbƒLƒ“ƒO‚Åg‚¤j
@@ -67,6 +84,30 @@ function init() {
         line2[i].position.set(i-5, 0, 0);
         scene.add( line2[i] );
     }
+
+    var geometryText1 = new THREE.TextGeometry( 'Cube', {
+      size: 40,
+      curveSegments: 10,
+      height:1,
+      bevelEnabled: false
+    });
+    mat = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
+    text1 = new THREE.Mesh( geometryText1, mat );
+    text1.position.set(1.7, 0, 0);
+    text1.scale.set(0.01, 0.01, 0.01);  
+    scene.add( text1 );
+
+    var geometryText2 = new THREE.TextGeometry( 'Rocket', {
+      size: 40,
+      curveSegments: 10,
+      height:1,
+      bevelEnabled: false
+    });
+    mat = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
+    text2 = new THREE.Mesh( geometryText2, mat );
+    text2.position.set(-3.2, 0, 0);
+    text2.scale.set(0.01, 0.01, 0.01);  
+    scene.add( text2 );
 }
 
 //===================================================================
@@ -85,6 +126,7 @@ function tween1() {                                   // us‚«v‚ÌƒAƒjƒ[ƒVƒ‡ƒ
   .onUpdate(function() {                              // ƒtƒŒ[ƒ€XV‚Ìˆ—
     mesh1.position.z = twVal1.posZ;                   // ˆÊ’u‚ğ•ÏX
     mesh1.rotation.x = twVal1.rotX;                   // ‰ñ“]‚ğ•ÏX
+    text1.position.z = twVal1.posZ;
   })
   .onComplete(function() {                            // ƒAƒjƒ[ƒVƒ‡ƒ“Š®—¹‚Ìˆ—
     tween1_back();                                    // u‹A‚èv‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğÀs
@@ -99,6 +141,7 @@ function tween1_back() {                              // u‹A‚èv‚ÌƒAƒjƒ[ƒVƒ‡ƒ
   .onUpdate(function() {
     mesh1.position.z = twVal1.posZ;
     mesh1.rotation.x = twVal1.rotX;
+    text1.position.z = twVal1.posZ;
   })
   .onComplete(function() {
     // ‚È‚É‚à‚µ‚È‚¢
@@ -120,6 +163,7 @@ function tween2() {                                   // us‚«v‚ÌƒAƒjƒ[ƒVƒ‡ƒ
   .onUpdate(function() {                              // ƒtƒŒ[ƒ€XV‚Ìˆ—
     mesh2.position.y = twVal2.posY;                   // ˆÊ’u‚ğ•ÏX
     mesh2.rotation.y = twVal2.rotY;                   // ‰ñ“]‚ğ•ÏX
+    text2.position.y = twVal2.posY;
   })
   .onComplete(function() {                            // ƒAƒjƒ[ƒVƒ‡ƒ“Š®—¹‚Ìˆ—
     tween2_back();                                    // u‹A‚èv‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğÀs
@@ -134,6 +178,7 @@ function tween2_back() {                              // u‹A‚èv‚ÌƒAƒjƒ[ƒVƒ‡ƒ
   .onUpdate(function() {
     mesh2.position.y = twVal2.posY;
     mesh2.rotation.y = twVal2.rotY;
+    text2.position.y = twVal2.posY;
   })
   .onComplete(function() {
     // ‚È‚É‚à‚µ‚È‚¢
