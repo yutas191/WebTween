@@ -21,20 +21,6 @@ var line2 = [];
 var text1;
 var text2;
 
-function set_texture() {
- 
-  canvas = document.createElement('canvas');
-  canvas.width = 64;
-  canvas.height = 32;
-  textContext = canvas.getContext('2d');
-  textContext.font = "20px '‚l‚r ‚oƒSƒVƒbƒN'";
- 
-  textContext.fillStyle = "rgb(200, 30, 100)";
-  textContext.fillText("‚Ô‚Í‚Í‚Í", 0, 20);
-  texture = new THREE.Texture(canvas);
-  return texture;
-}
-
 function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
