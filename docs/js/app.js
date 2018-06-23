@@ -3,15 +3,17 @@
 //===================================================================
 var renderer = new THREE.WebGLRenderer();
 var camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000 );
-var light = new THREE.DirectionalLight(0xffffff);     // 平行光源（白）を作成
+var light = new THREE.DirectionalLight(0xffffff);
 var scene = new THREE.Scene();
+
+var ambientlight = new THREE.AmbientLight(0x888888);
 
 var geo;
 var mat;
 var mesh1;
 
 var mesh2;
-var loader = new THREE.JSONLoader();                  // json形式のモデルを読み込むローダ
+var loader = new THREE.JSONLoader();
 
 var geometryLine1 = new THREE.Geometry();
 var line1 = [];
@@ -25,27 +27,31 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // カメラ設定
     camera.position.set(0, 4, 5);
     camera.rotation.set(-0.5, 0, 0);
+    scene.add(camera);
 
-    scene.add(camera);                                    // カメラをシーンに追加
-    light.position.set(0, 0, 2);                          // カメラ方向から照らす
-    scene.add(light);                                     // シーンに光源を追加
+    // ライト設定
+    light.position.set(0, 0, 2);
+    scene.add(light);
+    scene.add(ambientlight);
 
-    geo = new THREE.CubeGeometry(1, 1, 1);            // cube ジオメトリ（サイズは 1x1x1）
+    // Cube配置
+    geo = new THREE.CubeGeometry(1, 1, 1);
     mat = new THREE.MeshNormalMaterial({transparent: true,opacity: 0.8,side:THREE.DoubleSide});
-    mesh1 = new THREE.Mesh(geo, mat);                 // メッシュを生成
-    mesh1.name = "cube";                                  // メッシュの名前（後でピッキングで使う）
-    mesh1.position.set(1, 0, 0);                          // 初期位置
+    mesh1 = new THREE.Mesh(geo, mat);
+    mesh1.name = "cube";
+    mesh1.position.set(1, 0, 0);
     scene.add(mesh1);
 
-    loader.load("./model/rocketX.json", function(geo, mat){ // モデルを読み込む
+    // Rocket配置
+    loader.load("./model/rocketX.json", function(geo, mat){
         mat = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png")});
-        //mat = new THREE.MeshNormalMaterial();
-        mesh2 = new THREE.Mesh(geo, mat);                // メッシュ化
-        mesh2.name = "rocket";                              // メッシュの名前（後でピッキングで使う）
-        mesh2.scale.set(0.3, 0.3, 0.3);                     // 初期サイズ（現物合わせ）
-        mesh2.position.set(-0.9, 0, 0.5);                      // 初期位置（現物合わせ）
+        mesh2 = new THREE.Mesh(geo, mat);
+        mesh2.name = "rocket";
+        mesh2.scale.set(0.3, 0.3, 0.3);
+        mesh2.position.set(-0.9, 0, 0.5);
         scene.add(mesh2);
     });
 
@@ -71,6 +77,7 @@ function init() {
         scene.add( line2[i] );
     }
 
+    // テキスト配置
     var geometryText1 = new THREE.TextGeometry( 'Cube', {
       size: 40,
       curveSegments: 10,
@@ -83,6 +90,7 @@ function init() {
     text1.scale.set(0.01, 0.01, 0.01);  
     scene.add( text1 );
 
+    // テキスト配置
     var geometryText2 = new THREE.TextGeometry( 'Rocket', {
       size: 40,
       curveSegments: 10,
@@ -92,7 +100,7 @@ function init() {
     mat = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
     text2 = new THREE.Mesh( geometryText2, mat );
     text2.position.set(-3.2, 0, 0);
-    text2.scale.set(0.01, 0.01, 0.01);  
+    text2.scale.set(0.01, 0.01, 0.01);
     scene.add( text2 );
 }
 
