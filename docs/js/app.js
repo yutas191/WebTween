@@ -1,226 +1,158 @@
-//===================================================================
-// three.js の各種設定
-//===================================================================
-var renderer = new THREE.WebGLRenderer();
-var camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000 );
-var light = new THREE.DirectionalLight(0xffffff);
-var scene = new THREE.Scene();
+var meshCube;
+var meshRocket;
+var floor;
 
-var ambientlight = new THREE.AmbientLight(0x888888);
+var meshText1;
+var meshText2;
 
-var geo;
-var mat;
-var mesh1;
+class App {
+	init() {
+		floor = new THREE.Scene();
+		// ライト
+		var light = new THREE.DirectionalLight(0xFFFFFF);
+		light.position.set(0.5, 0.5, -0.5);
+		scene.add( light );
+		var ambientLight = new THREE.AmbientLight(0x888888);
+		scene.add( ambientLight );
 
-var mesh2;
-var loader = new THREE.JSONLoader();
+		// Cube
+		var geometryCube = new THREE.CubeGeometry(2, 2, 2);
+		var materialCube = new THREE.MeshNormalMaterial({transparent: true,opacity: 0.8,side:THREE.DoubleSide});
+		meshCube = new THREE.Mesh(geometryCube, materialCube);
+		meshCube.name = "cube";
+		meshCube.position.set(-4, 1, 0);
+		floor.add(meshCube);
 
-var geometryLine1 = new THREE.Geometry();
-var line1 = [];
-var geometryLine2 = new THREE.Geometry();
-var line2 = [];
+		// Rocket
+		loader.load("./model/rocketX.json", function(geometryRocket, materialRocket){
+			materialRocket = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png"),side:THREE.DoubleSide});
+			meshRocket = new THREE.Mesh(geometryRocket, materialRocket);
+			meshRocket.name = "rocket";
+			meshRocket.scale.set(1, 1, 1);
+			meshRocket.position.set(4, 0, 0);
+			meshRocket.rotation.set(0, Math.PI, 0);
+			floor.add(meshRocket);
+		});
 
-var text1;
-var text2;
+		// Text Cube
+		var geometryText1 = new THREE.TextGeometry('Cube',{size:40,curveSegments:10,height:1,bevelEnabled:false});
+		var materialText1 = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
+		meshText1 = new THREE.Mesh(geometryText1,materialText1);
+		meshText1.position.set(-5.5, 0, 0);
+		meshText1.rotation.set(0, Math.PI, 0);
+		meshText1.scale.set(0.02, 0.02, 0.02);
+		floor.add(meshText1);
 
-function init() {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+		// Text Rocket
+		var geometryText2 = new THREE.TextGeometry('Rocket',{size:40,curveSegments:10,height:1,bevelEnabled:false});
+		var materialText2 = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
+		meshText2 = new THREE.Mesh(geometryText2,materialText2);
+		meshText2.position.set(9, 0, 0);
+		meshText2.rotation.set(0, Math.PI, 0);
+		meshText2.scale.set(0.02, 0.02, 0.02);
+		floor.add(meshText2);
 
-    // カメラ設定
-    camera.position.set(0, 4, 5);
-    camera.rotation.set(-0.5, 0, 0);
-    scene.add(camera);
+		// Grid
+		var grid = new THREE.GridHelper( 100, 8 );
+		grid.material.color = new THREE.Color( 0x0000ff);
+		grid.position.set(0, 0, 0);
+		floor.add(grid);
 
-    // ライト設定
-    light.position.set(0, 0, 2);
-    scene.add(light);
-    scene.add(ambientlight);
+		// Floor
+		floor.position.set(0, -4, 20);
+		scene.add(floor);
+	}
 
-    // Cube配置
-    geo = new THREE.CubeGeometry(1, 1, 1);
-    mat = new THREE.MeshNormalMaterial({transparent: true,opacity: 0.8,side:THREE.DoubleSide});
-    mesh1 = new THREE.Mesh(geo, mat);
-    mesh1.name = "cube";
-    mesh1.position.set(1, 0, 0);
-    scene.add(mesh1);
+	// タッチ
+	touch(objName) {
+		console.log(objName);
+		switch(objName) {
+		case "cube":
+			this.tweenCube();
+			break;
+		case "rocket":
+			this.tweenRocket();
+			break;
+		default:
+			break;
+		}
+	}
 
-    // Rocket配置
-    loader.load("./model/rocketX.json", function(geo, mat){
-        mat = new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("./model/rocketX.png")});
-        mesh2 = new THREE.Mesh(geo, mat);
-        mesh2.name = "rocket";
-        mesh2.scale.set(0.3, 0.3, 0.3);
-        mesh2.position.set(-0.9, 0, 0.5);
-        scene.add(mesh2);
-    });
+	// アニメーション
+	tweenCube() {
+		var twIni1 = {posZ: 0, rotX: 0};			// 初期位置
+		var twFor1 = {posZ: -4, rotX: -Math.PI};	// 終端位置
+		var twVal1 = {posZ: 0, rotX: 0};			// 更新パラメータ
 
-    // 横線
-    geometryLine1.vertices.push(
-        new THREE.Vector3( -5, -0.5, 0 ),
-        new THREE.Vector3( 5, -0.5, 0 )
-    );
-    for (  var i = 0;  i < 6;  i++  ) {
-        line1[i] = new THREE.Line( geometryLine1, new THREE.LineBasicMaterial( { color: 0x888888} ) );
-        line1[i].position.set(0, 0, -i);
-        scene.add( line1[i] );
-    }
+		var tween = new TWEEN.Tween(twVal1)			// 「行き」のアニメーション
+		.to(twFor1, 2000)
+		.easing(TWEEN.Easing.Back.Out)
+		.onUpdate(function() {
+			meshCube.position.z = twVal1.posZ;
+			meshCube.rotation.x = twVal1.rotX;
+			meshText1.position.z = twVal1.posZ;
+		})
+		.onComplete(function() {
+			var tween = new TWEEN.Tween(twVal1)		// 「帰り」のアニメーションを実行
+			.to(twIni1, 2000)
+			.easing(TWEEN.Easing.Back.InOut)
+			.onUpdate(function() {
+				meshCube.position.z = twVal1.posZ;
+				meshCube.rotation.x = twVal1.rotX;
+				meshText1.position.z = twVal1.posZ;
+			})
+			.onComplete(function() {
+				// なにもしない
+			})
+			.delay(100)
+			.start();
+		})
+		.delay(0)
+		.start();
+	}
 
-    // 縦線
-    geometryLine2.vertices.push(
-        new THREE.Vector3( 0, -0.5, -5 ),
-        new THREE.Vector3( 0, -0.5, 5 )
-    );
-    for (  var i = 0;  i < 11;  i++  ) {
-        line2[i] = new THREE.Line( geometryLine2, new THREE.LineBasicMaterial( { color: 0x888888} ) );
-        line2[i].position.set(i-5, 0, 0);
-        scene.add( line2[i] );
-    }
+	// アニメーション
+	tweenRocket() {
+		var twIni2 = {posY: 0, rotY: Math.PI};		// 初期位置
+		var twFor2 = {posY: 20, rotY: 0};			// 終端位置
+		var twVal2 = {posY: 0, rotY: Math.PI};		// 更新パラメータ
 
-    // テキスト配置
-    var geometryText1 = new THREE.TextGeometry( 'Cube', {
-      size: 40,
-      curveSegments: 10,
-      height:1,
-      bevelEnabled: false
-    });
-    mat = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
-    text1 = new THREE.Mesh( geometryText1, mat );
-    text1.position.set(1.7, 0, 0);
-    text1.scale.set(0.01, 0.01, 0.01);  
-    scene.add( text1 );
+		var tween = new TWEEN.Tween(twVal2)			// 「行き」のアニメーション
+		.to(twFor2, 2000)
+		.easing(TWEEN.Easing.Quadratic.InOut)
+		.onUpdate(function() {
+			meshRocket.position.y = twVal2.posY;
+			meshRocket.rotation.y = twVal2.rotY;
+			meshText2.position.y = twVal2.posY;
+		})
+		.onComplete(function() {
+			var tween = new TWEEN.Tween(twVal2)		// 「帰り」のアニメーションを実行
+			.to(twIni2, 3000)
+			.easing(TWEEN.Easing.Quintic.InOut)
+			.onUpdate(function() {
+				meshRocket.position.y = twVal2.posY;
+				meshRocket.rotation.y = twVal2.rotY;
+				meshText2.position.y = twVal2.posY;
+			})
+			.onComplete(function() {
+				// なにもしない
+			})
+			.delay(2000)
+			.start();
+		})
+		.delay(0)
+		.start();
+	}
 
-    // テキスト配置
-    var geometryText2 = new THREE.TextGeometry( 'Rocket', {
-      size: 40,
-      curveSegments: 10,
-      height:1,
-      bevelEnabled: false
-    });
-    mat = new THREE.MeshLambertMaterial( { color: 0x00ccff,side:THREE.DoubleSide } );
-    text2 = new THREE.Mesh( geometryText2, mat );
-    text2.position.set(-3.2, 0, 0);
-    text2.scale.set(0.01, 0.01, 0.01);
-    scene.add( text2 );
+	// 更新
+	update(dt) {
+
+	}
+
+	// 描画
+	render(dt) {
+
+	}
+
 }
 
-//===================================================================
-// Tween アニメーション
-//===================================================================
-//-------------------------------
-// mesh1 について（cubeが転がる）
-//-------------------------------
-var twIni1 = {posZ: 0, rotX: 0};                      // 初期パラメータ
-var twVal1 = {posZ: 0, rotX: 0};                      // tweenによって更新されるパラメータ
-var twFor1 = {posZ: -2, rotX: -Math.PI};              // ターゲットパラメータ
-function tween1() {                                   // 「行き」のアニメーション
-  var tween = new TWEEN.Tween(twVal1)                 // tweenオブジェクトを作成
-  .to(twFor1, 2000)                                   // ターゲットと到達時間
-  .easing(TWEEN.Easing.Back.Out)                      // イージング
-  .onUpdate(function() {                              // フレーム更新時の処理
-    mesh1.position.z = twVal1.posZ;                   // 位置を変更
-    mesh1.rotation.x = twVal1.rotX;                   // 回転を変更
-    text1.position.z = twVal1.posZ;
-  })
-  .onComplete(function() {                            // アニメーション完了時の処理
-    tween1_back();                                    // 「帰り」のアニメーションを実行
-  })
-  .delay(0)                                           // 開始までの遅延時間
-  .start();                                           // tweenアニメーション開始
-}
-function tween1_back() {                              // 「帰り」のアニメーション
-  var tween = new TWEEN.Tween(twVal1)
-  .to(twIni1, 2000)                                   // ターゲットを初期パラメータに設定
-  .easing(TWEEN.Easing.Back.InOut)
-  .onUpdate(function() {
-    mesh1.position.z = twVal1.posZ;
-    mesh1.rotation.x = twVal1.rotX;
-    text1.position.z = twVal1.posZ;
-  })
-  .onComplete(function() {
-    // なにもしない
-  })
-  .delay(100)
-  .start();
-}
-
-//-------------------------------
-// mesh2 について（rocketが飛ぶ）
-//-------------------------------
-var twIni2 = {posY: 0, rotY: 0};                      // 初期パラメータ
-var twVal2 = {posY: 0, rotY: 0};                      // tweenによって更新されるパラメータ
-var twFor2 = {posY: 2, rotY: 2*Math.PI};              // ターゲットパラメータ
-function tween2() {                                   // 「行き」のアニメーション
-  var tween = new TWEEN.Tween(twVal2)                 // tweenオブジェクトを作成
-  .to(twFor2, 2000)                                   // ターゲットと到達時間
-  .easing(TWEEN.Easing.Quadratic.InOut)               // イージング
-  .onUpdate(function() {                              // フレーム更新時の処理
-    mesh2.position.y = twVal2.posY;                   // 位置を変更
-    mesh2.rotation.y = twVal2.rotY;                   // 回転を変更
-    text2.position.y = twVal2.posY;
-  })
-  .onComplete(function() {                            // アニメーション完了時の処理
-    tween2_back();                                    // 「帰り」のアニメーションを実行
-  })
-  .delay(0)                                           // 開始までの遅延時間
-  .start();                                           // tweenアニメーション開始
-}
-function tween2_back() {                              // 「帰り」のアニメーション
-  var tween = new TWEEN.Tween(twVal2)
-  .to(twIni2, 3000)                                   // ターゲットを初期パラメータに設定
-  .easing(TWEEN.Easing.Quintic.InOut)
-  .onUpdate(function() {
-    mesh2.position.y = twVal2.posY;
-    mesh2.rotation.y = twVal2.rotY;
-    text2.position.y = twVal2.posY;
-  })
-  .onComplete(function() {
-    // なにもしない
-  })
-  .delay(5000)
-  .start();
-}
-
-
-//===================================================================
-// マウスダウン処理
-//===================================================================
-window.addEventListener("mousedown", function(ret) {
-  var mouseX = ret.clientX;                           // マウスのx座標
-  var mouseY = ret.clientY;                           // マウスのy座標
-  mouseX =  (mouseX / window.innerWidth)  * 2 - 1;    // -1 ～ +1 に正規化されたx座標
-  mouseY = -(mouseY / window.innerHeight) * 2 + 1;    // -1 ～ +1 に正規化されたy座標
-  var pos = new THREE.Vector3(mouseX, mouseY, 1);     // マウスベクトル
-  pos.unproject(camera);                              // スクリーン座標系をカメラ座標系に変換
-  // レイキャスタを作成（始点, 向きのベクトル）
-  var ray = new THREE.Raycaster(camera.position, pos.sub(camera.position).normalize());
-  var obj = ray.intersectObjects(scene.children, true);   // レイと交差したオブジェクトの取得
-  if(obj.length > 0) {                                // 交差したオブジェクトがあれば
-    touch(obj[0].object.name);                       // タッチされた対象に応じた処理を実行
-  }
-});
-// タッチされた対象に応じた処理
-function touch(objName) {
-  switch(objName) {
-    case "cube":                                      // cubeなら
-      tween1();                                       // cubeのアニメーションを実行
-      break;
-    case "rocket":                                    // rocketなら
-      tween2();                                       // rocketのアニメーションを実行
-      break;
-    default:
-      break;
-  }
-}
-
-//===================================================================
-// レンダリング・ループ
-//===================================================================
-function renderScene() {                              // レンダリング関数
-  requestAnimationFrame(renderScene);                 // ループを要求
-  TWEEN.update();                                     // Tweenアニメーションを更新
-  renderer.render(scene, camera);                     // レンダリング実施
-}
-
-init();
-renderScene();                                        // 最初に1回だけレンダリングをトリガ
