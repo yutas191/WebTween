@@ -6,6 +6,10 @@ var meshText1;
 var meshText2;
 
 class App {
+	constructor(scene) {
+		this.scene = scene;
+	}
+
 	init() {
 		floor = new THREE.Scene();
 		// ƒ‰ƒCƒg
